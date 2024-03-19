@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Lap Time Analysis</title>
+  <%= csrf_meta_tags %>
+  <%= csp_meta_tag %>
+  <%= stylesheet_link_tag 'application', media: 'all' %>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+  <h1>Lap Time Analysis</h1>
+
+  <h2>Race Selection</h2>
+  <div id="race-select-container">
+    <select id="race-select">
+      <% Race.all.each do |race| %>
+        <option value="<%= race.id %>"><%= race.name %></option>
+      <% end %>
+    </select>
+  </div>
+
+  <h2>Team Selection</h2>
+  <div id="teams-select-container"></div>
+  <button id="add-team-button">Add Team</button>
+  <button id="remove-team-button">Remove Team</button>
+  <button id="update-chart-button">Update Chart</button>
+
+  <h2>Lap Time Chart</h2>  
+  <canvas id="lap-time-chart" style="width: 200px; height: 100px;"></canvas>  
+
+
+  <script>
+    const teamsSelectContainer = document.getElementById('teams-select-container');
+    let teamCount = 0; 
+
+    document.addEventListener('DOMContentLoaded', function() {
+      for (let i = 0; i < 2; i++) {
+        addTeamSelection();
+      } 
+    });
+
+    document.getElementById('add-team-button').addEventListener('click', addTeamSelection);
+
+    document.getElementById('update-chart-button').addEventListener('click', function() {
+      const selectedTeamIds = getSelectedTeamIds(); 
+      const selectedRaceId = document.getElementById('race-select').value;
+
+      fetchLapTimeData(selectedTeamIds, selectedRaceId) 
+          .then(lapTimeData => {
+              updateChart(lapTimeData);
+          });
+    });
+
+    document.getElementById('remove-team-button').addEventListener('click', function() { 
+      const teamsContainer = document.getElementById('teams-select-container');
+      if (teamsContainer.lastChild) { 
+        teamsContainer.lastChild.remove();
+      }
+    });
+
+    function addTeamSelection() {
+      const newSelect = document.createElement('select');
+      newSelect.id = 'team-select-' + (++teamCount);
+
+      // Populate options using ERB
+      newSelect.innerHTML = `<% Team.all.each do |team| %>
+                              <option value="<%= team.id %>"><%= team.name %></option>
+                            <% end %>`; 
+      teamsSelectContainer.appendChild(newSelect);
+    }
+
+    function getSelectedTeamIds() {
+      const selects = teamsSelectContainer.querySelectorAll('select');
+      return Array.from(selects).map(select => parseInt(select.value, 10)); 
+    }
+
+    function fetchLapTimeData(teamIds, raceId) {
+      const url = '/fetch_chart_data?team_ids[]=' + teamIds.join('&team_ids[]=') + '&race_id=' + raceId;
+
+      return fetch(url, {
+        method: 'POST',
+      })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json(); 
+        }) 
+        .then(lapData => formatChartData(lapData)); 
+    }
+
+    // Helper to format data for Chart.js (adjust as needed)
+    function formatChartData(jsonData) {
+        const datasets = jsonData.map(team => ({
+            label: team.name,
+            data: team.data.map(item => ({ x: item[0], y: item[1] })), // Chart.js format
+            // ... other Chart.js configuration
+        }));
+
+        return datasets;
+    }
+
+    function updateChart(datasets) {
+        console.log(datasets); 
+        const ctx = document.getElementById('lap-time-chart').getContext('2d');
+
+        if (window.myChart) {
+            window.myChart.destroy();
+        }
+
+        window.myChart = new Chart(ctx, {
+            type: 'line', 
+            data: { datasets: datasets },
+            options: {
+                scales: {
+                    x: { 
+                        type: 'linear', 
+                        title: { display: true, text: 'Lap Number' } 
+                    },
+                    y: { title: { display: true, text: 'Lap Time (s)' } }
+                },
+                datasets: {
+                    line: {
+                        spanGaps: true
+                    }
+                },
+            }
+        });
+    }
+  </script>
+</body>
+</html>
+
