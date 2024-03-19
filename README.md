@@ -1,24 +1,13 @@
 # README
 
-This README would normally document whatever steps are necessary to get the
-application up and running.
+In order to run this app you need the following:
 
-Things you may want to cover:
+* Ruby version 3.3.0 or newer
 
-* Ruby version
+* Rails version 7.1.3 or newer
 
-* System dependencies
+* Chart.js
 
-* Configuration
+* SQLite3 version 1.4 or newer
 
-* Database creation
-
-* Database initialization
-
-* How to run the test suite
-
-* Services (job queues, cache servers, search engines, etc.)
-
-* Deployment instructions
-
-* ...
+* Yarn version 1.22.19 or newer
