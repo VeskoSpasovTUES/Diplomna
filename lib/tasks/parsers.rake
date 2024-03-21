@@ -1,8 +1,8 @@
 require 'csv'
 namespace :parsers do
   desc "Parse the laptimes from a csv file"
-  task laptimes: :environment do
-    csv_file_path = '/home/vesko/Diplomna/Results-4/Results-4/4H/laptimes.csv'
+  task :laptimes, [arg1] => [:environment] do |t, args|
+    csv_file_path = args[:arg1]
     $current_team = nil
     $current_lap_number = 0
     race_name = nil
