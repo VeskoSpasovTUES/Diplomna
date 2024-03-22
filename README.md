@@ -20,7 +20,7 @@ After installing everything you need to open a terminal go into the project dire
 
 1. bundle install
 2. db:migrate
-3. rake parsers:laptimes["<path_to_csv_file>"]
+3. rake parsers:laptimes[<path_to_csv_file>]
 4. rails s
 
 The first command will install all of the gems used for the project. The second one will make the migrations to the database to ensure its structure. 
